@@ -8,7 +8,7 @@ from sklearn import preprocessing  # to normalise existing X
 from sklearn.cluster import KMeans
 from scipy import sparse
 from soyclustering import SphericalKMeans
-
+from numba import njit, prange
 
 def KFSC(X, k, d, lamda, options: Optional[dict] = None):
     """
@@ -154,7 +154,7 @@ def initial_DC(X, m, d, k, init_type, nrep_kmeans):
         for i in range(1, k+1):
             temp = X[:, idx[0:d, i - 1]]
             if m < d:
-                D[:, (i-1)*d+1:i*d] = temp
+                D[:, (i-1)*d:i*d] = temp
             else:
                 u, _, _ = np.linalg.svd(temp)
                 D[:, (i-1)*d:i*d] = u[:, 0:d]
