@@ -16,7 +16,7 @@ from KFSC_LARGE import KFSC_LARGE
 
 def test_dataset(X, k, label, function):
     tic = time.time()
-    print("Starting {} for a process".format(function.__name__))
+    print("Starting {} at process id {}".format(function.__name__, os.getpid()))
     opt = {
         'solver': 2,
         'maxiter': 300,
