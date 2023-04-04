@@ -16,8 +16,8 @@ from KFSC_LARGE import KFSC_LARGE
 path = os.getcwd()
 os.chdir(path)
 # dataset = 'mnist_sc_f150.mat'
-# dataset = 'fmnist_fea_150.mat'
-dataset = 'Epileptic.mat'
+dataset = 'fmnist_fea_150.mat'
+# dataset = 'Epileptic.mat'
 f = sio.loadmat(dataset)
 X = f['X']
 label = np.concatenate(f['Label'])
