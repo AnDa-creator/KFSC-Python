@@ -162,6 +162,7 @@ def initial_DC(X, m, d, k, init_type, nrep_kmeans):
     ld = np.float_power(np.sum(D**2, axis=0), 0.5)
     idx = np.where(ld > 1)[0]
     D[:, idx] = np.divide(D[:, idx], np.matlib.repmat(ld[idx], m, 1))
+    # D[:, idx] = preprocessing.normalize(D[:, idx], norm='l2')
     C = np.linalg.inv(D.T@D + 1e-5 * np.eye(d*k))@D.T@X0
     return D, C
 
@@ -241,6 +242,7 @@ def update_D(X, D, C_new, iter_D):
         ld = np.float_power(np.sum(D_t**2, axis=0), 0.5)
         idx = np.where(ld > 1)[0]
         D_t[:, idx] = np.divide(D_t[:, idx], np.matlib.repmat(ld[idx], m, 1))
+        # D_t[:, idx] = preprocessing.normalize(D_t[:, idx], norm='l2')
         if np.linalg.norm(gD/tau, 'fro')/np.linalg.norm(D_t, 'fro') < 1e-3:
             break
     D_new = D_t
