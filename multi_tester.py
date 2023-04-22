@@ -70,13 +70,15 @@ def test_dataset(X, k, label, function, dataset, testparam={}):
     func_result = BestMap(label[:], func_result[:])
     func_acc = accuracy_score(label, func_result)
     func_nmi = normalized_mutual_info_score(label, func_result)
-    print('{}: acc = {}, nmi = {}'.format(function.__name__,func_acc, func_nmi))
+    print('{}: acc = {}, nmi = {}, params: {}'.format(function.__name__,func_acc, func_nmi, 
+                                                      testparam))
     toc = time.time()
     dt = toc - tic
     print("Time elapsed: ", dt, " seconds")
     run_info = pd.DataFrame({'Dataset': [dataset] ,'acc': [func_acc], 
                             'nmi': [func_nmi], 'time': [dt], 'd': [d], 'lamda': [lamda],
-                            'opt': [opt],'Function': function.__name__})
+                            'opt': [opt],'Function': function.__name__, 
+                            'parameters': [testparam]})
     return run_info
     # run_info.to_csv('Scores//fmnist_run_info.csv', mode='a', index=False, header=False)
 
