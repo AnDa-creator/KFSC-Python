@@ -8,8 +8,9 @@ from sklearn import preprocessing  # to normalise existing X
 from sklearn.cluster import KMeans
 from scipy import sparse
 from soyclustering import SphericalKMeans
+from numba import jit, prange
 
-def KFSC_MB(X, k, d, lamda, options: Optional[dict] = None):
+def KFSC_MB(X, k, d, lamda, options: Optional[dict] = None, use_numba=False):
     maxiter = 500 if "maxiter" not in options.keys() else options["maxiter"]
     iter_D = 5 if "iter_D" not in options.keys() else options["iter_D"]
     tol = 1e-4 if "tol" not in options.keys() else options["tol"]
@@ -34,7 +35,7 @@ def KFSC_MB(X, k, d, lamda, options: Optional[dict] = None):
     my_generator = np.random.default_rng()
     D, C = initial_DC(X[:, my_generator.choice(X.shape[1],
                                min(X.shape[1], 50000), replace=False)], 
-                               m, d, k, init_type, nrep_kmeans)
+                               m, d, k, init_type, nrep_kmeans, use_numba=use_numba)
     C = np.linalg.inv(D.T @ D + 1e-5 * np.eye(d * k)) @ D.T @ X
     dfC = np.zeros(np.shape(C))
     Q = np.zeros((maxiter, k))
@@ -83,8 +84,8 @@ def compute_DC(D, C, X, d, k, lamda, iter_D, iter_C):
     dD = np.linalg.norm(D_new - D, 'fro')/np.linalg.norm(D, 'fro')
 
     return D_new, C_new, dD, dC
-
-def initial_DC( X, m, d, k, init_type, nrep_kmeans):
+@jit(parallel=True, forceobj=True)
+def initial_DC( X, m, d, k, init_type, nrep_kmeans, use_numba=False):
     if init_type == 'random':
         print('Initialise D and C by random ...')
         D = np.random.randn(m, d*k)
@@ -101,11 +102,18 @@ def initial_DC( X, m, d, k, init_type, nrep_kmeans):
             sX_norm = sparse.csr_matrix(X_Norm)
             clusterer_array = []
             inertia_array = []
-            for _ in range(nrep_kmeans):
-                kclusterer_now = SphericalKMeans(n_clusters=k,verbose=0,
-                                                    init='k-means++').fit(sX_norm)
-                clusterer_array.append(kclusterer_now)
-                inertia_array.append(kclusterer_now.inertia_)
+            if use_numba:
+                for _ in prange(nrep_kmeans):
+                    kclusterer_now = SphericalKMeans(n_clusters=k,verbose=0,
+                                                        init='k-means++').fit(sX_norm)
+                    clusterer_array.append(kclusterer_now)
+                    inertia_array.append(kclusterer_now.inertia_)
+            else:
+                for _ in range(nrep_kmeans):
+                    kclusterer_now = SphericalKMeans(n_clusters=k,verbose=0,
+                                                        init='k-means++').fit(sX_norm)
+                    clusterer_array.append(kclusterer_now)
+                    inertia_array.append(kclusterer_now.inertia_)
             kclusterer = clusterer_array[np.argmin(inertia_array)]
             dist = kclusterer.transform(sX_norm)**2
 
