@@ -8,7 +8,7 @@ from KFSC import KFSC
 from scipy import sparse
 from soyclustering import SphericalKMeans
 
-def KFSC_LARGE(X, k, d, lamda, opt, n_sel, sel_type):
+def KFSC_LARGE(X, k, d, lamda, opt, n_sel, sel_type, use_numba=False):
     """
     Perform kFSC on a large dataset by selecting landmark data points randomly or by k-means
         input:
@@ -53,7 +53,7 @@ def KFSC_LARGE(X, k, d, lamda, opt, n_sel, sel_type):
 
         del Xs, C, dist
     print('Perform kFSC on the selected landmark data points...')
-    L, output = KFSC(X_train, k, d, lamda, opt)
+    L, output = KFSC(X_train, k, d, lamda, opt, use_numba=use_numba)
     print('Predict the labels of all data points...')
     D = output['D']
     E = np.zeros((k, n))
